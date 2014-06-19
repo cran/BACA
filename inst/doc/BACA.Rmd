@@ -1,0 +1,156 @@
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{An Introduction to the BACA package}
+-->
+
+Title: BACA: Bubble chArt to Compare Annotations by using DAVID
+
+Author: "Vittorio Fortino and Dario Greco"
+
+========================================================
+
+In some cases you have different, large lists of genes and you would like to perform several enrichment analysis and graphically compare the corresponding results. This can be done using the R package BACA. 
+
+BACA provides three R functions: **DAVIDSearch**, **BBplot** and **Jplot**. 
+
+DAVIDSearch is a user-friendly R function that wraps the code necessary to use the different types of functional annotations available in DAVID knowledgebase. It uses the R package RDAVIDWebService to query DAVID and wrap the results into R objects namely DAVIDFunctionalAnnotationChart.  For more details please visit http://david.abcc.ncifcrf.gov/content.jsp?file=WS.html. 
+
+DAVIDSearch() accepts in input different lists of up-/down-regulated genes, the email of a given registered DAVID users, the type of gene ID, the type of list (Gene or Background), the EASE enrichment score, the functional type of annotation and the specie to use (see DAVID for more details). After querying DAVID web services (http://david.abcc.ncifcrf.gov/webservice), it outputs a list of DAVIDFunctionalAnnotationChart objects, one for each specified list of genes.  
+
+ - DAVIDsearch <inputs>
+  
+    - **gene.lists**, indicate the gene lists of interest. To compare the enrichment of differential genes specify separately the up- and down- regulated genes.
+    
+    - **david.user**, indicate the email of a given registered DAVID; it is necessary to use the DAVID webservice.
+    
+    - **idType Character**, specify the type of submitted id (default value is "AFFYMETRIX_3PRIME_IVT_ID").
+    
+    - **listType**, specify type of list (defaul value is "Gene"). 
+    
+    - **easeScore**, specify a threshold value for the EASE enrichment score (defaul value is 2).
+    
+    - **annotation**, category name to use in the functional annotation analysis (default value is "KEGG_PATHWAY"). 
+    
+    - **specie**, the specie (default value is "Homo sapiens").
+    
+BBplot is an R function that uses the DAVIDFunctionalAnnotationChart objects to build a chart that graphically compares functional annotations found by DAVID. This chart shows a grid where each row represents an enriched annotation and each column corresponds to a condition/treatment where that annotation was highlighted. While, each cell reports a bubble indicating the number of genes enriching the corresplonding annotation and the state of these genes in terms of down- and up-regulation (default setting: green = "down" - red = "up"). BBplot function can work with any kind of gene list of interest and not only with up/down regulated gene lists. Moreover, it allows users to compare the enrichment of differential genes for different subgroups.
+
+- BBplot <inputs>
+
+    - **list.david.obj**, specify the list of DAVIDFunctionalAnnotationChart objects. It should correspond to the DAVIDsearch output.
+    
+    - **max.pval**, indicate the cut-off to select the most significant annotations.
+
+    - **min.ngenes**,  indicate the minimum number of genes associated with a given gene list to select the most significant annotations. 
+
+    - **title**, indicate the plot title. 
+    
+    - **name.cond**, specify a name for each list of up-/down-regulated genes.
+
+    - **labels**,  specify the names used to indicate the down- and up-regulated gene lists. 
+    
+    - **colors**,  specify the colors used to distinguish down- and up-regulated gene lists. The default value is c("#009E73", "red").
+    
+    - **print.term**, indicate the information to print out for each annotation: name and/or description. 
+
+BACA uses external packages and assumes that they are installed. Packages to install and load before to use BACA: **RDAVIDWebService** and **ggplot2**.
+
+Examples.
+
+```{r message=FALSE, results='hide'}
+library(RDAVIDWebService)
+library(ggplot2)
+library(BACA)
+```
+
+The example will be carried out using artificial gene lists: **gene.lists.ex**. This data contains artifical up- and down-regulated gene lists corresponding to two time points of two different experimental conditions. 
+
+```{r}
+data(gene.lists.ex)
+```
+
+The str() function can be used to check the content of **gene.lists.ex**.
+
+```{r}
+str(gene.lists.ex)
+```
+
+The **gene.lists.ex** contains eight character vectors:
+
+ 1) Condition #1 - time point 12h (list of down-regulated genes).
+ 
+ 2) Condition #1 - time point 12h (list of up-regulated genes).
+ 
+ 3) Condition #1 - time point 24h (list of down-regulated genes).
+ 
+ 4) Condition #1 - time point 24h (list of up-regulated genes).
+ 
+ 5) Condition #2 - time point 12h (list of down-regulated genes).
+ 
+ 6) Condition #2 - time point 12h (list of up-regulated genes).
+ 
+ 7) Condition #2 - time point 24h (list of down-regulated genes).
+ 
+ 8) Condition #2 - time point 24h (list of up-regulated genes).
+ 
+
+After loading the data, use **DAVIDsearch()** to query the DAVID knowledge base. It requires two main inputs: (1) the lists of up-/down-regulated gene sets and (2) the email of a given registered DAVID users (make sure you are registered at http://david.abcc.ncifcrf.gov/webservice/register.htm). Then other optional inputs can be specified.  
+
+```{r}
+# result.kegg <- DAVIDsearch(gene.lists.ex, david.user = "vittorio.fortino@ttl.fi", idType="ENTREZ_GENE_ID", annotation="KEGG_PATHWAY")
+```
+
+Note, DAVID will find the species associated to the submitted gene lists and DAVIDsearch function will print out the corresponding names. Therefore, if the user wants to select one species name, it can re-use DAVIDsearch() function indicating as "species" a different, found pecies name. 
+
+Examples of annotation that users can specify: "BIOCARTA", "ENSEMBL_GENE_ID", "ENTREZ_GENE_ID", "GOTERM_CC_ALL", "GOTERM_BP_ALL", "GOTERM_BP_ALL", "KEGG_PATHWAY", "INTERPRO", etc. While, examples of "idType" that users can specify: "GENBANK_ACCESSION", "ENSEMBL_GENE_ID", "PFAM_ID", etc. 
+
+The following code is useful to get information about the possibile input values. Note, this code does not call any function in the R package BACA. 
+
+```{r}
+david.obj <- DAVIDWebService$new(email="vittorio.fortino@ttl.fi")
+# print out all available annotation category names.
+getAllAnnotationCategoryNames(david.obj)
+```
+
+```{r}
+# print out all acceptable DAVID idTypes.
+getIdTypes(david.obj)
+```
+
+DAVIDSearch outputs a list of DAVIDFunctionalAnnotationChart objects, one for each specified list of genes. The DAVIDFunctionalAnnotationChart class is defined into the R package http://www.bioconductor.org/packages/release/bioc/html/RDAVIDWebService.html, it represents the output of "Functional Annotation Chart" of DAVID.
+
+Note, query to DAVID webserver can take a long time to execute. Therefore, BACA package provides the DAVIDFunctionalAnnotationChart objects obtained querying DAVID with the artificial gene lists in **gene.lists.ex**. 
+
+```{r}
+data(result.kegg)
+```
+
+After using DAVIDsearch, build the bubble plot using the **BBplot()** function.
+
+```{r}
+bbplot.kegg <- BBplot(result.kegg, max.pval = 0.05, min.ngenes = 10, 
+                    name.com = c("Cond.1_12h","Cond.1_24h","Cond.2_12h","Cond.2_24h"), 
+                    labels = c("down", "up"), colors = c("#009E73", "red"), 
+                    title = "BBplot - KEGG")
+```
+
+
+```{r, fig.width=12, fig.height=8}
+bbplot.kegg
+```
+
+Save the plot as a TIFF image using the ggsave function in the R package [ggplot2](http://cran.r-project.org/web/packages/ggplot2/index.html).
+
+```{r}
+ggsave("KEGG_terms.tiff", width=6, height=4, scale=2, dpi=200)
+```
+
+Finally, use the **Jplot()** function to build/plot pairwise comparisons between functional annotation charts.
+
+```{r}
+jplot.kegg <- Jplot(result.kegg[[4]], result.kegg[[2]], max.pval = 0.05, min.ngenes = 10, print.term="name")
+```
+
+```{r, fig.width=12, fig.height=6}
+jplot.kegg
+```
