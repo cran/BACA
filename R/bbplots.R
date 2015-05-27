@@ -38,6 +38,8 @@ DAVIDsearch <- function(gene.lists,
 BBplot <- function(list.david.obj,
                    max.pval = 0.01,
                    min.ngenes = 5,
+                   max.ngenes = 500,
+                   adj.method = "Benjamini",
                    title = "BBplot",
                    name.com = "***",
                    labels = c("down", "up"),
@@ -46,6 +48,10 @@ BBplot <- function(list.david.obj,
 {
   if(length(list.david.obj) > 0 & all(unlist(lapply(list.david.obj, FUN = function(x) {inherits(x, "DAVIDFunctionalAnnotationChart")})))) {
     filt.dat <- lapply(list.david.obj, FUN = function(l) {
+      if(adj.method == "") l <- l[which(l$PValue <= max.pval & l$Count >= min.ngenes & l$Count <= max.ngenes), ]
+      if(adj.method == "Bonferroni") l <- l[which(l$Bonferroni <= max.pval & l$Count >= min.ngenes & l$Count <= max.ngenes), ]
+      if(adj.method == "Benjamini") l <- l[which(l$Benjamini <= max.pval & l$Count >= min.ngenes & l$Count <= max.ngenes), ]
+      if(adj.method == "FDR") l <- l[which(l$FDR <= max.pval & l$Count >= min.ngenes & l$Count <= max.ngenes), ]
       l <- l[which(l$PValue <= max.pval & l$Count >= min.ngenes),]
       if(print.term == "name") l$Term <- unlist(lapply(l$Term, FUN = function(x) unlist(strsplit(x,":"))[1]))
       else if(print.term == "description") l$Term <- unlist(lapply(l$Term, FUN = function(x) unlist(strsplit(x,":"))[2]))
@@ -76,7 +82,7 @@ BBplot <- function(list.david.obj,
       }
       bbplot <- NULL
       if((length(list.david.obj) %% 2) == 0 & length(colors) == 2) {
-        grid.info <-  rep(name.com, each = (length(list.paths)*2))
+        grid.info <-  factor(rep(name.com, each = (length(list.paths)*2)), levels = name.com)
         dataset <- data.frame(row=row, col=col, circle.size=circle.size, significance=significance, dn.up=dn.up, exp=grid.info)
         bbplot <- ggplot(dataset, aes(y = factor(row),  x = factor(col))) +
           geom_point(data = subset(dataset, circle.size>0), aes(colour = dn.up, size = circle.size, alpha=significance)) +
@@ -90,7 +96,7 @@ BBplot <- function(list.david.obj,
           labs(x=NULL, y = NULL)
       }
       else {
-        grid.info <- rep(name.com, each = length(list.paths))
+        grid.info <- factor(rep(name.com, each = length(list.paths)), levels = name.com)
         dataset <- data.frame(row=row, col=col, circle.size=circle.size, significance=significance, exp=grid.info)
         ## build the BBplot
         bbplot <- ggplot(dataset, aes(y = factor(row),  x = factor(col))) +

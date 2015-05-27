@@ -8,9 +8,9 @@ It uses a list of DAVIDFunctionalAnnotationChart objects to build a chart that s
 BBplot function can work with any kind of gene list and not only with up/down regulated gene lists. 
 }
 \usage{
-BBplot(list.david.obj, max.pval = 0.01, min.ngenes = 5, title = "BBplot", 
-       name.com = "***", labels = c("down", "up"), colors = c("#009E73", "red"),
-       print.term = "full")
+BBplot(list.david.obj, max.pval = 0.01, min.ngenes = 5, max.ngenes = 500, 
+       adj.method = "Benjamini", title = "BBplot", name.com = "***", 
+       labels = c("down", "up"), colors = c("#009E73", "red"), print.term = "full")
 }
 \arguments{
   \item{list.david.obj}{
@@ -20,7 +20,13 @@ BBplot(list.david.obj, max.pval = 0.01, min.ngenes = 5, title = "BBplot",
    (Optional). Numeric with the p-value that must be present in order to select the most significant enriched annotations. Default values is 0.01.
 }
   \item{min.ngenes}{
-   (Optional). Integer with the minimum number of genes (greater or equal) that must be present in an enriched annotations. Default values is 5.
+   (Optional). Integer with the minimum number of genes (greater or equal) requested for each enriched annotations. Default values is 5.
+}
+\item{max.ngenes}{
+   (Optional). Integer with the maximum number of genes (greater or equal) requested for each enriched annotations. Default values is 5.
+}
+ \item{adj.method}{
+   (Optional). Character with the name of the adjustment method. Default valuse is "Benjamini". Methods that are available: "Benjamini", "Bonferroni" or "FDR". It can be empty "". 
 }
   \item{title}{
    (Optional). Character with the name of the buble plot. Default valuse is "Bubble plot". 

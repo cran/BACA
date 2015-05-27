@@ -13,9 +13,9 @@ In some cases you have different, large lists of genes and you would like to per
 
 BACA provides three R functions: **DAVIDSearch**, **BBplot** and **Jplot**. 
 
-DAVIDSearch is a user-friendly R function that wraps the code necessary to use the different types of functional annotations available in DAVID knowledgebase. It uses the R package RDAVIDWebService to query DAVID and wrap the results into R objects namely.RDAVIDWebService is a versatile interface to access DAVID analysis straight from R without the need of ad hoc parsing queried reports. It requires a registered DAVID user. For more details please visit http://david.abcc.ncifcrf.gov/content.jsp?file=WS.html. 
+DAVIDSearch is a user-friendly R function that wraps the code necessary to use the different types of functional annotations available in DAVID knowledgebase. It uses the R package RDAVIDWebService to query DAVID and wrap the results into R objects namely DAVIDFunctionalAnnotationChart.  For more details please visit http://david.abcc.ncifcrf.gov/content.jsp?file=WS.html. 
 
-DAVIDSearch() accepts in input different lists of up-/down-regulated genes, the email of a given registered DAVID users, the type of gene ID, the type of list (Gene or Background), the EASE enrichment score, the functional type of annotation and the specie to use (see DAVID for more details). After querying DAVID web services (http://david.abcc.ncifcrf.gov/webservice), it outputs a list of DAVIDFunctionalAnnotationChart objects, one for each specified list of genes.  
+DAVIDSearch() accepts in input different lists of up-/down-regulated genes, the email of a given registered DAVID users, the type of gene ID, the type of list (Gene or Background), the EASE enrichment score, the functional type of annotation and the specie to use (see DAVID for more details). After querying DAVID web services (http://david.abcc.ncifcrf.gov/webservice/register.htm), it outputs a list of DAVIDFunctionalAnnotationChart objects, one for each specified list of genes.  
 
  - DAVIDsearch <inputs>
   
@@ -51,7 +51,7 @@ BBplot is an R function that uses the DAVIDFunctionalAnnotationChart objects to 
     
     - **colors**,  specify the colors used to distinguish down- and up-regulated gene lists. The default value is c("#009E73", "red").
     
-    - **cod.term**, indicate whether the code of the terms/annotions must be added.
+    - **print.term**, indicate the information to print out for each annotation: name and/or description. 
 
 BACA uses external packages and assumes that they are installed. Packages to install and load before to use BACA: **RDAVIDWebService** and **ggplot2**.
 
@@ -113,18 +113,16 @@ After loading the data, use **DAVIDsearch()** to query the DAVID knowledge base.
 
 
 ```r
-# result.kegg <- DAVIDsearch(gene.lists.ex, david.user = "vittorio.fortino@ttl.fi", idType="ENTREZ_GENE_ID", annotation="KEGG_PATHWAY")
+# result.kegg <- DAVIDsearch(gene.lists.ex, david.user = "###########", 
+#             idType="ENTREZ_GENE_ID", annotation="KEGG_PATHWAY")
 ```
 
 Note, DAVID will find the species associated to the submitted gene lists and DAVIDsearch function will print out the corresponding names. Therefore, if the user wants to select one species name, it can re-use DAVIDsearch() function indicating as "species" a different, found pecies name. 
 
-The following code is usefult to get inforamtion about the possibile input values. Note, this code does not call any function in the R package BACA. 
+Examples of annotation that users can specify: "BIOCARTA", "ENSEMBL_GENE_ID", "ENTREZ_GENE_ID", "GOTERM_CC_ALL", "GOTERM_BP_ALL", "GOTERM_BP_ALL", "KEGG_PATHWAY", "INTERPRO", etc. While, examples of "idType" that users can specify: "GENBANK_ACCESSION", "ENSEMBL_GENE_ID", "PFAM_ID", etc. 
 
+Please, use the functions **getAllAnnotationCategoryNames()** and **getIdTypes(david.obj)** of the R package RDAVIDWebService to prin out all the available annotation category names and DAVID idTypes.
 
-```r
-david.obj <- DAVIDWebService$new(email="vittorio.fortino@ttl.fi")
-getAllAnnotationCategoryNames(david.obj)
-```
 
 ```
 ##  [1] "BBID"                                
@@ -211,12 +209,6 @@ getAllAnnotationCategoryNames(david.obj)
 ## [82] "UCSC_TFBS"
 ```
 
-Returns all available annotation category names.
-
-
-```r
-getIdTypes(david.obj)
-```
 
 ```
 ##  [1] "AFFYMETRIX_3PRIME_IVT_ID" "AFFYMETRIX_EXON_GENE_ID" 
@@ -239,9 +231,7 @@ getIdTypes(david.obj)
 ## [35] "ZFIN_ID"
 ```
 
-Returns all acceptable DAVID idTypes.
-
-DAVIDSearch outputs a list of DAVIDFunctionalAnnotationChart objects, one for each specified list of genes. The DAVIDFunctionalAnnotationChart class is defined into the R package [RDAVIDWebService](http://www.bioconductor.org/packages/release/bioc/html/RDAVIDWebService.html), it represents the output of "Functional Annotation Chart" of DAVID.
+DAVIDSearch outputs a list of DAVIDFunctionalAnnotationChart objects, one for each specified list of genes. The DAVIDFunctionalAnnotationChart class is defined into the R package http://www.bioconductor.org/packages/release/bioc/html/RDAVIDWebService.html, it represents the output of "Functional Annotation Chart" of DAVID.
 
 Note, query to DAVID webserver can take a long time to execute. Therefore, BACA package provides the DAVIDFunctionalAnnotationChart objects obtained querying DAVID with the artificial gene lists in **gene.lists.ex**. 
 
@@ -250,13 +240,12 @@ Note, query to DAVID webserver can take a long time to execute. Therefore, BACA 
 data(result.kegg)
 ```
 
-
 After using DAVIDsearch, build the bubble plot using the **BBplot()** function.
 
 
 ```r
 bbplot.kegg <- BBplot(result.kegg, max.pval = 0.05, min.ngenes = 10, 
-                    name.com = c("Cond.1_12h","Cond.1_24h","Cond.2_12h","Cond.2_24h"), 
+                    name.com = c("C1_12h","C1_24h","C2_12h","C2_24h"), 
                     labels = c("down", "up"), colors = c("#009E73", "red"), 
                     title = "BBplot - KEGG")
 ```
@@ -280,7 +269,9 @@ Finally, use the **Jplot()** function to build/plot pairwise comparisons between
 
 
 ```r
-jplot.kegg <- Jplot(result.kegg[[4]], result.kegg[[2]], max.pval = 0.05, min.ngenes = 10, cod.term=1)
+jplot.kegg <- Jplot(result.kegg[[4]], result.kegg[[2]], 
+                    max.pval = 0.05, min.ngenes = 10, 
+                    print.term="name")
 ```
 
 

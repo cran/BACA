@@ -1,0 +1,20 @@
+citHeader("To cite BACA in publications use:")
+
+citEntry(entry = "Article",
+  title        = "BACA: bubble chArt to compare annotations",
+  author       = personList(as.person("Vittorio Fortino"),
+			    as.person("Harri Alenius"),
+			    as.person("Dario Greco")),
+  journal      = "BMC Bioinformatics",
+  year         = "2015",
+  volume       = "16",
+  pages        = "37",
+  url          = "http://www.biomedcentral.com/1471-2105/16/37/",
+
+  textVersion  =
+  paste("Fortino V, Alenius H, Greco D.",
+        "BACA: bubble chArt to compare annotations.",
+        "BMC Bioinformatics 2015, 16:37.",
+        "URL http://www.biomedcentral.com/1471-2105/16/37/.")
+
+)
